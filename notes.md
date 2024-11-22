@@ -63,9 +63,21 @@ fn makes_copy(some_integer: i32) {
 ```
 Returning values from functions can also impact when variables move in and out of scope.  See the code snippet [here][def3] for an example.  This means that, in order to pass a variable to a function and use that variable later, we would need to return it as part of that function.  This could get pretty tedious when writing our code.  Thankfully Rust also implements a mechanism for using a value without transferring ownership, called references.
 
-## References
+## References & Borrowing - project `/references/`
+A reference is like a pointer that just provides the address to the data. But unlike a pointer, a reference is guarnateed to to point to a value of a specific type.  This allows you to provide a variable to a function and still access it without having to pass it back to the calling function.
 
-[bookmark](https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html)
+Fundamentally, references allow your code to refer to a value without taking ownership of it.  Function signatures indicate they expect a reference by including the `&` character in their type declaration, e.g.
+```rust
+fn string_length(s: &String) -> usize
+```
+Variables are prefaced with the `&` to pass the reference to a function, e.g.
+```rust
+let len = string_length(&s1);
+```
+
+When a function accepts a reference to value it is said to have "borrowed" it.  One thing to note about borrowing is that you cannot modify a borrowed value unless you explicitly declare the reference to be mutable (just like variables). In those cases, the `&` is prefixed to the `mut` modifier.
+
+[bookmark](https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html#mutable-references)
 
 
 [def1]: https://doc.rust-lang.org/book
