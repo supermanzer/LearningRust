@@ -77,7 +77,16 @@ let len = string_length(&s1);
 
 When a function accepts a reference to value it is said to have "borrowed" it.  One thing to note about borrowing is that you cannot modify a borrowed value unless you explicitly declare the reference to be mutable (just like variables). In those cases, the `&` is prefixed to the `mut` modifier.
 
-[bookmark](https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html#mutable-references)
+Mutable references carry their own gotchas.  To prevent data races, you cannot declare multiple references to the same variable in the same scope if one of them is mutable.  This prevents situations where two pointers point to the same data, one is used to mutate the data, and there is not way to synch the access.
+
+You can modify the scope of each pointer to enable the use of multiple references in your code.  Just so long as no data is being both mutated and referred to in the same scope from multiple pointers.  Even using the pointers earlier in your code and not referring to them later is sufficient (see `fn mut_ref()` in `/references/src/main.rs`).
+
+### Dangling References
+In many languages with pointers, it is possible to create a dangling pointer, a pointer that references a memory location where the data has been freed.  Rust prevents this at compile time and the error message points out you are passing a borrowed value with no value to be borrowed fom.  Helpful!
+
+## The Slice Type
+
+[bookmark](https://doc.rust-lang.org/book/ch04-03-slices.html)
 
 
 [def1]: https://doc.rust-lang.org/book
