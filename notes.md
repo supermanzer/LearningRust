@@ -4,6 +4,8 @@ These are my notes as I read/work through [The Rust Programming Language][def1].
 
 > Skipped: Chapters 1 -3, basic programming concepts but they are represented in the existing projects in this directory
 
+[bookmark](https://doc.rust-lang.org/book/ch04-03-slices.html)
+
 ## Project Ideas
 These are ideas I have for software projects in Rust:
 * Revise my [TODO application][def4] to use Rust and write a Git hook for it to run before any push (or commit).
@@ -85,11 +87,36 @@ You can modify the scope of each pointer to enable the use of multiple reference
 In many languages with pointers, it is possible to create a dangling pointer, a pointer that references a memory location where the data has been freed.  Rust prevents this at compile time and the error message points out you are passing a borrowed value with no value to be borrowed fom.  Helpful!
 
 ## The Slice Type
+> project `slices`
 
-[bookmark](https://doc.rust-lang.org/book/ch04-03-slices.html)
+Slices let you refer to a sequence of elements in a collection rather than the entire collection.  They are a kind of reference and therefore do not have ownership.
+
+#### Problem:
+Write a function that takes in a string of words separated by spaces and returns the first word.  If we do not find a space in the string, the whole string should be returned.
+
+Rust has a mechanism to slice strings by referring to the index positions using the following syntax `let slice = &string[0..N];`
+
+The `[..]` is Rust's range syntax.  If you do not provide the starting index number, Rust will assume you mean `0`. If you do not provide the ending index number, Rust will assume you mean the end of the sequence.
+
+Therefore
+```rust
+let s = String::from("hello world");
+// These two are equivalent
+let slice = &s[0..5];
+let slice = &s[..5];
+
+let len = s.len();
+// And so are these
+let slice = &s[3..len];
+let slice = &s[3..];
+```
+
+## Structs - Structuring Relational Data [Ch 5][def5]
+
 
 
 [def1]: https://doc.rust-lang.org/book
 [def2]: https://doc.rust-lang.org/book/ch04-01-what-is-ownership.htmlcar
 [def3]: https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html#return-values-and-scope
 [def4]: https://github.com/supermanzer/todo-cla
+[def5]: https://doc.rust-lang.org/book/ch05-00-structs.html
