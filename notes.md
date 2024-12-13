@@ -112,7 +112,69 @@ let slice = &s[3..];
 ```
 
 ## Structs - Structuring Relational Data [Ch 5][def5]
+Structs (or Structures) are a custom data type that lets you package and name multiple related values to form a meaningful group.  For many OO languages, this is similar to the data attributes of an object.
 
+Struct names should define the signifigance of the collection of data. E.g.
+
+```rust
+// Defines a user of our Rust application
+struct User {
+    active: bool,
+    email: String,
+    username: String,
+    last_logged_in: Instant
+}
+```
+
+Once you have created a Struct, you use it by creating an instance.  Instantiating structs invovles providing concrete values for the attributes in `{key: value}` pairs.
+
+To access specific values from a struct, you use `.` notation like so:
+```rust
+user1 = User {
+    active: true,
+    email: String::from("judith.wombat@bufo.io"),
+    username: String::from("iamusername"),
+    last_logged_in: Instant::now()
+}
+println!("{user1.email}")
+```
+You can also update instances the same way (if you have declared the instance mutable with the `mut` keyword).
+
+Similar to Javascript object declaration, Rust has a field init shorthand syntax for concisely declaring struct instances where your variable names match the field names of a struct.  E.g.
+```rust
+fn build_user(email:String, username:String) -> User {
+    return User{
+        active: true,
+        username,
+        email,
+        last_logged_in: Instant::now()
+    };
+}
+```
+When you need to create a new struct that shares many of the same values, you can use the struct update syntax to copy values from an existing struct.
+
+```rust
+let user1 = build_user();
+let user2 = User {
+    email: String::from("new.example@bufo.io"),
+    ..user1 // this has to come last
+}
+```
+> **Note** The above approach will Move data _from_ user1 to user2. This will invalidate user1.  If we provided both email and username then user1 would still be valid since the other types implement the Copy trait.
+
+### [Tuple Structs][def6]
+Rust also allow you to define structs that appear similar to Tuples and do not name the individual fields.  These are useful when you want to provide the labeling of naming a struct but you don't care about the names of the particular fields.
+
+```rust
+struct Color(i32, i32, i32); // although, personally I would label these as R,G,B respectively
+struct Point(i32, i32, i32); // again, I would label X,Y,Z
+
+let black = Color(0,0,0);
+let origin = Point(0,0,0);
+```
+In the snippet above both `black` and `origin` are essentially tuples with the same values.  However, using a tuple struct with a defined name helps us comminicate what each data type represents.
+
+### [Example Program using Structs][def7]
 
 
 [def1]: https://doc.rust-lang.org/book
@@ -120,3 +182,5 @@ let slice = &s[3..];
 [def3]: https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html#return-values-and-scope
 [def4]: https://github.com/supermanzer/todo-cla
 [def5]: https://doc.rust-lang.org/book/ch05-00-structs.html
+[def6]: https://doc.rust-lang.org/book/ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types
+[def7]: https://doc.rust-lang.org/book/ch05-02-example-structs.html
