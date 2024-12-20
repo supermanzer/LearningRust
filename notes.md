@@ -112,6 +112,7 @@ let slice = &s[3..];
 ```
 
 ## Structs - Structuring Relational Data [Ch 5][def5]
+> Project: `.structs/`
 Structs (or Structures) are a custom data type that lets you package and name multiple related values to form a meaningful group.  For many OO languages, this is similar to the data attributes of an object.
 
 Struct names should define the signifigance of the collection of data. E.g.
@@ -165,6 +166,8 @@ let user2 = User {
 ### [Tuple Structs][def6]
 Rust also allow you to define structs that appear similar to Tuples and do not name the individual fields.  These are useful when you want to provide the labeling of naming a struct but you don't care about the names of the particular fields.
 
+
+
 ```rust
 struct Color(i32, i32, i32); // although, personally I would label these as R,G,B respectively
 struct Point(i32, i32, i32); // again, I would label X,Y,Z
@@ -175,7 +178,17 @@ let origin = Point(0,0,0);
 In the snippet above both `black` and `origin` are essentially tuples with the same values.  However, using a tuple struct with a defined name helps us comminicate what each data type represents.
 
 ### [Example Program using Structs][def7]
+Task: Write a program that calculates the area of a rectangle using first single variables and then refactor to use `struct`s.
 
+> project `ch5_example/`
+
+The code in the above project is hihgly annotated.  However, the overall lesson here is, beyond keeping related data components together, strucs help us improve our code by making the meaning and intended use of our code clear.
+
+Another useful tip is the `dbg1` macro.  This is Rust's native debugging tool.  In addition to printing out details of varaiables and expressions, it writes to `stderr` and includes the filename and line number where it is used.
+
+In summary, structs allow you to create custom types that encapsulate data and functions that have specific meaning to the domain of your program.  This can make your code better organized and easier to understand.
+
+## Enums and Pattern Matching - [Ch6][def8]
 
 [def1]: https://doc.rust-lang.org/book
 [def2]: https://doc.rust-lang.org/book/ch04-01-what-is-ownership.htmlcar
@@ -184,3 +197,4 @@ In the snippet above both `black` and `origin` are essentially tuples with the s
 [def5]: https://doc.rust-lang.org/book/ch05-00-structs.html
 [def6]: https://doc.rust-lang.org/book/ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types
 [def7]: https://doc.rust-lang.org/book/ch05-02-example-structs.html
+[def8]: https://doc.rust-lang.org/book/ch06-00-enums.html
