@@ -119,6 +119,21 @@ fn reroll() {
     println!("Roll dice again!")
 }
 
+fn set_max_match(max: u8) {
+    let config_max = Some(3u8);
+    match config_max {
+        Some(max) => println!("Setting max to {max}"),
+        _ => (),
+    }
+}
+
+fn set_max_if_let(max: u8) {
+    let config_max = Some(3u8);
+    if let Some(max) = config_max {
+        println!("Setting max to {max}");
+    }
+}
+
 fn main() {
     let coin = Coin::Quarter(UsState::California);
     let cents = get_cents(coin);
@@ -129,4 +144,6 @@ fn main() {
     add_one();
     catch_dice();
     catch_dice2();
+    set_max_match(3);
+    set_max_if_let(3);
 }
