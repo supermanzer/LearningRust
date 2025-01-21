@@ -395,6 +395,49 @@ Let's define some terms we will use
 
 
 ### [Packages and Crates][def14]
+A `crate` is the smallest amount of code that the Rust compiler considers at a time.  Even when you pass a single file to the Rust runtime using `rustc`, Rust considers this a crate. Crates can contain modules.
+
+A crate comes in two forms: binary or library crate. **Binary crates** are programs you can compile into an executable that you run (e.g. command line application, web server, etc). Each must have a function called `main` that defines what happens when the executable runs.
+
+**Library crates** don't have a `main` function and they don't compile to an executable. Instead they define functionality intended to be shared in multiple projects (e.g. the `rand` functionality we used earlier).  In Rust, "crate" often refers to a library crate. The _crate root_ is a source file that the Rust compiler starts from and makes up the root module of your crate.
+
+A **package** is a bundle of one or more crates that provides a set of functionality.  A package contains `Cargo.toml` file that defines how to build the crates.  The Cargo command line tool is a package that contains a binary crate and a library crate.
+
+When you use `cargo new project`, Cargo creates a `Cargo.toml` file and a `src/main.rs` file.  This convention means `main.rs` is the crate root of the binary crate for this package. If Cargo finds an `src/lib.rs` that is the root for the library crate of the same name.  A package can contain many binary crates in the `src/bin` directory.
+
+### [Modules - Controlling Scope & Privacy][def15]
+
+Before we dig in, here's a quick breakdown of how modules, paths, and the `use` & `pub` keywords work with the Rust compiler. It also covers how most devs organize their Rust code.
+
+* Start crate root: When compiling, the compiler first looks in the crate root (`src/lib.rs` or `src/main.rs`) for code to compile.
+* Declaring modules: In the root file, you can declare new modules. The compiler then looks for module code (e.g. for the `neato` module)
+    * Inline, whithin curly brackets folloing the `mod neato` declaration
+    * In the file `src/neato.rs`
+    * In the file `src/neato/mod.rs`
+* Declaring submodules: In any file _other thant he root_, you can declare submodules. E.g. you might declare `mod nifty` in `src/neato.rs`. The complier will look for submodules code within the directory named for the parent module in the following places:
+    * Inline following `mod nifty`
+    * In the file `src/neato/nifty.rs`
+    * In the file `src/neato/nitfy/mod.rs`
+* Path to code in modules: Once amodule is part of your crate, you can refer to code in that module from anywhwere in the same crate, following privacy rules. E.g. you could access the `Spiffy` type in the `nifty`    module at `crate::neato::nifty::Spiffy`.
+* Private vs Public: Code within a module is private from the parent by default. To make a module public, declare it with `pub mod`.  To make items within the module public, prefix their declaration with the `pub` keyword.
+* `use` keyword: Within a scope, the `use` keyword creates a shortcut to items to reduce repetition of long paths. Rather than typing `crate::neato::nifty::Spiffy` every time, you can add `use crate::neato::nifty::Spiffy` and then just refer to `Spiffy` later.
+
+We use modules to group related definitions together and name the relation of these definitions.  For example, the code in our `restaurant` library crate demnstrates the grouping of different funtions within their specific domain inside a resaurant. We can see the _module tree_ of this crate below
+
+```sh
+crate
+  |_front_of_house
+    |__hosting
+    |  |_ add_to_waitlist
+    |  |_ seat_at_table
+    |__serving
+       |_ take_order
+       |_ sere_order
+       |_ take_payment
+```
+This organizations shows how modules are nested and what modules are siblings of each other.  There is implicit root module name `crate`.
+
+
 ---
 [def1]: https://doc.rust-lang.org/book
 [def2]: https://doc.rust-lang.org/book/ch04-01-what-is-ownership.htmlcar
@@ -410,3 +453,4 @@ Let's define some terms we will use
 [def12]: https://doc.rust-lang.org/book/ch06-03-if-let.html
 [def13]: https://doc.rust-lang.org/book/ch07-00-managing-growing-projects-with-packages-crates-and-modules.html
 [def14]: https://doc.rust-lang.org/book/ch07-01-packages-and-crates.html
+[def15]: https://doc.rust-lang.org/book/ch07-02-defining-modules-to-control-scope-and-privacy.html
