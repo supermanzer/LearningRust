@@ -435,7 +435,120 @@ crate
        |_ sere_order
        |_ take_payment
 ```
-This organizations shows how modules are nested and what modules are siblings of each other.  There is implicit root module name `crate`.
+This organizations shows how modules are nested and what modules are siblings of each other.  There is implicit root module name `crate`. It is also similar to a filesystem directory.  The primary use cases are similar. We need to organize our code and be able to find what we need.
+
+### [Paths][def16]
+
+Paths are how we tell the Rust compiler where to find something in our module tree.  Paths take two forms
+* **Absolute Path:** The full path starting from the create root (or crate name for external crates).
+* **Relative Path:** Path from the current module
+
+In both cases we use double colons `::` to separate parts of the path. You can see multiple examples of this in the `restaurant` project.
+
+### [Use Keyword][def17]
+
+It would be quite tedious if we always needed to write out paths (absolute or relative) every time we wanted to interact with an item.  That is why Rust provides the keyword `use`. This allows us to reference the path once and then interact with the shorter name later on.
+
+For example, using our `/restaurant` library code:
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+use crate::front_of_house::hosting; // <- we can now access hosting directly
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist()
+}
+```
+It's important to note that the `use` keyword only creates a symbolic link to the item in the particular scope in which it is specified.
+
+E.g.
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+use crate::front_of_house::hosting; // <- we can now access hosting directly
+
+mod customer {
+    pub fn eat_at_restaurant() {
+        hosting::add_to_waitlist() // <- this won't work because hosting isn't in scope here
+        super::hosting::add_to_waitlist() // <- this references parent scope where hosting IS in scope
+    }
+}
+```
+**Note** for _functions_, it is idomatic to import them by specifying the parent module (e.g. `use crate::front_of_house::hosting` instead of `crate::front_of_house::hosting::add_to_waitlist`).  This helps identify what functions are not defined locally.  _BUT_ for enums and structs and other kinds of items, you should specify the full path like so
+```rust
+use std::collections::HashMap
+
+fn main() {
+    let mut map = HashMap::new();
+    map.insert(1,2);
+}
+```
+The exception to this general rule is when you import two items with the same name. In that case, keeping the parent module helps diambiguate the two (also Rust won't allow two items with the same name).
+
+_However_, you can rename an item brought into scope with the `use` keyword by specifying the new name with the `as` keyword. This is also similar to Python.
+
+When you bring external modules into scope with the `use` keyword, they are private by default.  You can re-export them with `pub use`
+
+### Separating Modules
+All our examples so far define modules in a single file. But this can easily get out of hand as your modules get larger. Splitting modules into separate files can help keep your code organized and readable.
+
+Our `restaurant` project has now been split up into separate modules to allow us to keep our files organized and sepearated our concerns.
+
+## Collections
+> Project `collections/`
+
+Collections are common data structures that can store multiple values.  These are separate from built-in array and tuple types because these collections store data on the heap so the amount does not need to be known and can grow/shrink while the program runs.  Collections have different costs & capabilities and choosing the right one is a skill you will develop as your experience grows.
+
+### Vectors
+Vectors allow you to store multiple values in a single data structure and keep the values next to each other in memory space.  Vectors are typed, meaning they can only store values of the saem type.  They are useful for storing lists of items.
+
+To modify a vector, like add elements to it, you need to define it as mutable using the `mut` keyword.  Then you can use the `.push()` function.
+
+We can even store multiple types in a vector. This may sound like it breaks the rules but not if we declare an Enum that stores multiple types and a vector that stores that Enum as it's type. 🤪
+
+### [Strings][def20]
+
+Strings, while extremely common in all programming languages, often trip up new Rust programmers.  These are due to Rust's approach for exposing possible errors, the underlying complexity of Strings, and UTF-8.  Strings are included in Collections as they represent a collection of bytes.  Many operations that are common to Collections are also found in Strings.
+
+**What is a String?** - Rust has a string type which is a string slice, `str`, and is often seen in it's borrowed form `&str`.  By contrast, the `String` type is a mutable, owned, UTF-8 encoded type.  Ensuring you know when you are referring to `String` vs `&str` is important to understanding your code.
+
+**Concatenation** - Often you want to build strings from others.  You can do this using the `+` operator.  However, this will consume the first string but require a reference to the second string because that is the way the `add(self, s: &str) -> String` function is built.  You can see this below
+
+```rust
+let s1 = String::from("Hello ");
+let s2 = String::from("world");
+let s3 = s1 + &s2; // s1 is consumed since we passed it directly.  s2 is still available since we passed a reference. 
+```
+For concatenating multiple strings, using the `+` gets rather unweildy.  What we can do instead is use the `format!` macro.
+
+**Indexing** - Unlike many other languages, you cannot simply access a character in a string using an index like `s[0]`.  Rust does not support String indexing.  Why not?  Because Rust stores Strings as vectors of bytes.  What's more, some characters require more bytes than others to store. Since the index will return a single byte, it may not return a valid Unicode scalar value. Rust avoids returning unexpected values by not supporting this approach.  This is also done to allow programs to choose how they interpret data, no matter the human language.
+
+Because of this approach, it is not advisable to attempt to slice strings, since it's not clear what type would be returned.  You _can_ slice strings like so:
+```rust
+let hello = "Здравствуйте"; // each character here takes 2 bytes to store
+let s = &hello[0..4]; // so s only holds the first 2 letters
+```
+Because of the number of bytes required to store these characters, if you were to use `s = &hello[0..3];`, the program would crash.  Be careful how you slice!
+
+**Iterating Methods** - THe best way to operate on pieces of a string is to be explicit about whether you want characters or bytes.  You can use the `.chars()` method to explicitly tell Rust you want to extract Unicode scalar values from a string. Alternatively, you can retrieve individual bytes using the `bytes()` method.
+
+**Beware!** Unicode values may be composed of more than 1 scalar value.
+
+Strings a complicated!  If you want to manipulate strings in your programs, be intentional and think carefully. Rust exposes more complexity but it prevents you from having to handle non-ASCII character errors.  There are lots of tools built into Rust that will allow you to safely manipulate strings so be sure to check them out.
+
+### [Hash Maps][def21]
+
+
+
+
 
 
 ---
@@ -454,3 +567,9 @@ This organizations shows how modules are nested and what modules are siblings of
 [def13]: https://doc.rust-lang.org/book/ch07-00-managing-growing-projects-with-packages-crates-and-modules.html
 [def14]: https://doc.rust-lang.org/book/ch07-01-packages-and-crates.html
 [def15]: https://doc.rust-lang.org/book/ch07-02-defining-modules-to-control-scope-and-privacy.html
+[def16]: https://doc.rust-lang.org/book/ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html
+[def17]: https://doc.rust-lang.org/book/ch07-04-bringing-paths-into-scope-with-the-use-keyword.html
+[def18]: https://doc.rust-lang.org/book/ch12-00-an-io-project.html
+[def19]: https://github.com/supermanzer/photo-info
+[def20]: https://doc.rust-lang.org/book/ch08-02-strings.html
+[def21]: https://doc.rust-lang.org/book/ch08-03-hash-maps.html

@@ -1,30 +1,61 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+fn deliver_order() {}
+
+mod front_of_house;
+
+mod back_of_house {
+
+    pub enum Appetizer {
+        Soup,
+        Salad,
+    }
+    pub struct Breakfast {
+        pub toast: String,
+        seasonal_fruit: String, // <- private field
+    }
+    impl Breakfast {
+        pub fn summer(toast: &str) -> Breakfast {
+            Breakfast {
+                toast: String::from(toast),
+                seasonal_fruit: String::from("peaches"),
+            }
+        }
+        pub fn winter(toast: &str) -> Breakfast {
+            Breakfast {
+                toast: String::from(toast),
+                seasonal_fruit: String::from("oranges"),
+            }
+        }
+        pub fn autumn(toast: &str) -> Breakfast {
+            Breakfast {
+                toast: String::from(toast),
+                seasonal_fruit: String::from("persimmons"),
+            }
+        }
+    }
+    fn fix_incorrect_order() {
+        cook_order();
+        super::deliver_order(); // <- super keyword to access parent module, same as Python
+    }
+
+    fn cook_order() {}
 }
 
-mod front_of_house {
-    mod hosting {
-        fn add_to_waitlist() {}
+// Using the 'use' keyword to bring a path into scope
+use crate::front_of_house::hosting;
 
-        fn seat_at_table() {}
-    }
+pub fn eat_at_restaurant() {
+    // Absolute path
+    crate::front_of_house::hosting::add_to_waitlist();
 
-    mod serving {
-        fn take_order() {}
+    // Relative path
+    hosting::add_to_waitlist();
 
-        fn serve_order() {}
+    // Order breakfast in the summer with Rye toast
+    let mut meal = back_of_house::Breakfast::summer("Rye");
+    // Change the toast
+    meal.toast = String::from("Wheat");
+    println!("I'd like {} toast please", meal.toast);
 
-        fn take_payment() {}
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+    let order1 = back_of_house::Appetizer::Soup;
+    let order2 = back_of_house::Appetizer::Salad;
 }
