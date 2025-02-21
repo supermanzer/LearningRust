@@ -546,8 +546,43 @@ Strings a complicated!  If you want to manipulate strings in your programs, be i
 
 ### [Hash Maps][def21]
 
+The `HashMap<K, V>` stores mappings of keys to values using a hashing function, which determines how it places these in memory.  Many languages use this kind of data structure but with different names, e.g. object, hash table, dictionary, associative array, etc.
 
+```rust
+use std::collections::HashMap;
 
+let mut map = HashMap::new();
+map.insert(String::from("a"), 10);
+map.insert(String::from("b"), 20);
+```
+HashMaps, like vectors, store their data on the heap and, like vectors, their key and value types are homogenous.
+
+We can access values in a HashMap using the `.get()` method.  The method returnes an `Option<&V>` type if there is a value for the key provided, or `None`.  You can hanlde the `Option` by calling the `copied` function to convert to `<Option<V>` and the `unwrap_or()` function will handle the `None` condition by returning whatever default you specify.
+```rust
+let val = map.get(&key).copied().unrwap_or(0); 
+```
+**Ownership** - For types that implement the `Copy` trait, values are copied into the HashMap.  For owned values, like `String`, the values are moved into the HashMap.
+
+**Updating** - The number of keys, vals are growable but each key an only have one value.  If you want to change a value you need to choose how to handle the old value. You could replace, combine, or only add a new value if there isn't an old one.
+
+the `insert` function will overwrite an existing value.  The `insert_or` function will only insert the provided value if there isn't a value currently present. To update based on the old value, it takes a bit more work.  All three are shown below.
+```rust
+let mut scores = HashMap::new();
+scores.insert(String::from("a"),10);
+scores.insert(String::from("a"), 20); // overwriting value
+
+scores.entry(String::from("a")).or_insert(30); // nothing happens becaue "a" exists already
+scores.entry(String::from("b")).or_insert(40); // adds k, v because they don't exist
+
+let keys = "a b c d";
+for key in keys.split_whitespace() {
+    let val = map.entry(key).or_insert(10); // adding k,v if they don't exist
+    *val += 10; // incrementing values
+}
+```
+Collections provide a large amount of functionality that will be necessary in many programs.  The standard library API docs contain details of many of the methods these collections implement.  
+
+## [Error Handling][def22]
 
 
 
@@ -573,3 +608,4 @@ Strings a complicated!  If you want to manipulate strings in your programs, be i
 [def19]: https://github.com/supermanzer/photo-info
 [def20]: https://doc.rust-lang.org/book/ch08-02-strings.html
 [def21]: https://doc.rust-lang.org/book/ch08-03-hash-maps.html
+[def22]: https://doc.rust-lang.org/book/ch09-00-error-handling.html
