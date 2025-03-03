@@ -583,7 +583,23 @@ for key in keys.split_whitespace() {
 Collections provide a large amount of functionality that will be necessary in many programs.  The standard library API docs contain details of many of the methods these collections implement.  
 
 ## [Error Handling][def22]
+Despite our best efforts, errors happen so it's important to know how to handle them.
 
+Rust groups errors in two major categories: recoverable and uncrecoverable errors.  Recoverable errors, like a `file not found` error, are ones where we likely weant to report the error an dmove on.  Unrecoverable errors are the result of bugs, for example attempting to access an array outside the index.  In these situations we immediately stop the program.
+
+Most languages don't distinguish between these two and treat them the same using a system like Exceptions.  Instead Rust has a type `<Result T, E>` for recoverable errors and the `panic!` macro that stops execution for uncrecoverable errors.
+
+### Unrecoverable errors
+
+For these errors, Rust has the `panic!` macro.  You can trigger this in two ways.
+1. By doing someting that will cause the program to panic (e.g. accessing arrays out of bounds)
+1. Using the `panic!` macro
+
+By setting an `env` variable, you can have Rust display the call stack when it encounters a `panic!` to make it easier to debug.  By default, when Rust hits a panic it will start unwinding the stack.  This invovles going back up the call stack and cleaning up the data.  This is a lot of work and Rust allows you to change this behavior by specifying in your `Cargo.toml` file.
+```toml
+[profile.release]
+panic = 'about'
+```
 
 
 ---
