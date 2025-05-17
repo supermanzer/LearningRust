@@ -585,7 +585,7 @@ Collections provide a large amount of functionality that will be necessary in ma
 ## [Error Handling][def22]
 Despite our best efforts, errors happen so it's important to know how to handle them.
 
-Rust groups errors in two major categories: recoverable and uncrecoverable errors.  Recoverable errors, like a `file not found` error, are ones where we likely weant to report the error an dmove on.  Unrecoverable errors are the result of bugs, for example attempting to access an array outside the index.  In these situations we immediately stop the program.
+Rust groups errors in two major categories: recoverable and uncrecoverable errors.  Recoverable errors, like a `file not found` error, are ones where we likely want to report the error and move on.  Unrecoverable errors are the result of bugs, for example attempting to access an array outside the index.  In these situations we immediately stop the program.
 
 Most languages don't distinguish between these two and treat them the same using a system like Exceptions.  Instead Rust has a type `<Result T, E>` for recoverable errors and the `panic!` macro that stops execution for uncrecoverable errors.
 
@@ -600,6 +600,100 @@ By setting an `env` variable, you can have Rust display the call stack when it e
 [profile.release]
 panic = 'about'
 ```
+When Rust panics, it can return just the line in your code that threw the error but often it can be more helpful to see the full stack trace.  In thos situations, you can set `RUST_BACKTRACE` to `1`.  When reading the stack trace, start at the top and read until you get to files you have written.  There will be calls both before and after this that you do not control but your code is where the error came from so reviewing how your program triggered it starts there.
+
+### Recoverable Errors
+Many errors are not serious enough that we should stop the program.  Rust includes these in the `Result` enum which can have 2 variants: `Ok` and `Err`.  
+```rust
+enum Result<T, E>{
+    Ok(T), // If the result is okay, return the expected type
+    Err(E) // If this caused an error, return the error
+}
+```
+When perfoming an operation that could return either type, you will want to use a `match` statement to handle both cases. E.g.
+```rust
+let file_result = File::open("path/to/file");
+
+let get_file = match file_result {
+    Ok(file) => file,
+    Err(error) => panic!("Problem opening file: {error:?}")
+}
+```
+#### Matching different errors
+Rust allows you to match on specific types of errors so you can handle those appropriately in your code. This can help you identify and handle those errors that are not severe enough to require exiting your code as well as more serious errors.  Let's take a look at one such example.
+
+```rust
+use std::fs::File;
+use std::io::ErrorKind;
+
+fn main() {
+    let greeting_file_result = File::open("hello.txt"); // Returns a Result<T, E> enum
+
+    let greeting_file = match greeting_file_result {
+        Ok(file) => file,
+        Err(error) => match error.kind() {  // Here we handle different kinds of errors
+            ErrorKind::NotFound => match File::create("hello.txt") {
+                Ok(fc) => fc,
+                Err(e) => panic!("Progme creating file: {e:?}"),
+            },
+            other_error => {
+                panic!("Problem opening the file: {other_error:?}")
+            }
+        }
+    }
+}
+```
+Both `File::open()` and `File::create()` return `Result<T, E>`. For `File::open()`, we return an `Err` variant of `io::Error`.  This is a struct that contains methods like `kind()` which we can use to check against the enum `io::ErrorKind` to match different types of errors that can result from `io` operations. In the above code, we match of the `NotFound` error type which indicates the file does not exist. In that case we attempt to create the file. We include a nested match statement because file creation could also fail so we raise an error in that case using the `panic!` macro.
+
+The other arm of the outer match identifies if we have some other problem opening the file (e.g. a permissions issue).
+
+In the above code we are doing quite a bit of `match`ing.  The `match` statement is a primitive and you _can_ use closures as a way to be more concise when you need to handle multiple `Result<T,E>` values.
+
+Here's the same operation using closures
+```rust
+fn main() {
+    let greeting_file = File::open("hello.txt").unrwap_or_else(|error| {
+        if error.kind() == ErrorKind::NotFound{
+            File::create("hello.txt").unwrap_or_else(|error| {
+                panic!("Problem creating file: {e:?}");
+            })
+        } else {
+            panic!("Problem opening file: {error:?}")
+        }
+    });
+}
+```
+This does add more operations per line (something I generally try to avoid) but, on the flip side, it _does_ wrap up a lof of our error handling and simplify returning a value to `greeting_file`.
+
+Which style you choose can come down to which is most readable and communicates intent.  The `Result<T,E>` type has many helper methods to reduce the need to use `match`.  For example, `unrwap` is a shortcut that will return a value if `Result` is an `Ok` variant, or call `panic!` if not.
+
+You can even define a custom `panic!` message by using the `expect` function like so:
+```rust
+use std::fs::File;
+
+fn main() {
+    let greeting_file = File::open("hello.txt")
+        .expect("File hello.txt should be included in this project");
+}
+```
+This approach can be very helpful when your project is going to be used by someone else. Throwing errors that indicate what the user needs to fix make everyone's life easier.  This also makes the assumptions of your code more clear.
+
+### [Propagating Errors][def23]
+In some cases where your code calls some function that might fail, you do not want to handle it where the error occurs.  Maybe that isn't the right place to make a decision about what to do next.  In that case you can _propagate_ the error up to the stack to another layer in your code where you might want to decide what to do next.
+
+The `errors` project contains a few different ways to implement this kind of error propagation.  Essentially, what we are trying to do in our basic functions is perform some operation. If we are successful, we return the value. If we are not, we return the errors so the calling function can take apporpriate action.  Our functions do not have sufficient context to know how to handle these errors and we should defer to the calling function.
+
+One nifty thing the `?` operator does when returning errors is coerce the error type into whatever type we defined in the `Result<>` return object.  If we implement a custom error, we could customize the `from` function to allow us to add any program-specific context when returning the error.  This functionality is lost with the most concise version of the function.
+
+The `?` operator can only be used within a function whose return types are compatible. For instance if we attempted
+```rust
+fn main() {
+    let greeting_file = File::open("hello.txt")?;
+}
+```
+this would nto work because the return value for the `main()` function doesn't match what the `?` operator will return.  If you have need of error handling in a function whose return type does not support the `?` error, you can either change the return type or use a `match` statement to handle the error within your function.
+
+### [To Panic or Not][def24]
 
 
 ---
@@ -625,3 +719,5 @@ panic = 'about'
 [def20]: https://doc.rust-lang.org/book/ch08-02-strings.html
 [def21]: https://doc.rust-lang.org/book/ch08-03-hash-maps.html
 [def22]: https://doc.rust-lang.org/book/ch09-00-error-handling.html
+[def23]: https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html#propagating-errors
+[def24]: https://doc.rust-lang.org/book/ch09-03-to-panic-or-not-to-panic.html
