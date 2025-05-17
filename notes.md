@@ -695,7 +695,33 @@ this would nto work because the return value for the `main()` function doesn't m
 
 ### [To Panic or Not][def24]
 
-When you call `panic!` there is no way for your code to recover from the error.  When you choose to either call `panic!` or return `Result`, you are making a decision for your code about whether the error is something that should stop code execution or not.
+When you call `panic!` there is no way for your code to recover from the error.  When you choose to either call `panic!` or return `Result`, you are making a decision for your code about whether the error is something that should stop code execution or not.  Returning a `Result` is often a good default practice so the calling code can inspect the `Err` object and determine if the error is, in fact, uncrecoverable.
+
+For Tests, prototypes, and examples, it may be more apporpriate to call `panic!`.  When you are writing code to explain a concept, adding robust error handling can obscure what you are trying to do.  Using methods like `unwrap` and `expect` make it clear what your code is trying to do and what it requires. In cases where you are certain your code will never have an `Err` (e.g. hard coding values), using `expect` is perfectly valid and allows you to provide documentation such as in the example below.
+
+```rust
+use std::net::IpAddr;
+
+let home: IpAddr = "127.0.0.1"
+            .parse()
+            .expect("Hardcoded IP Address will should be valid")
+```
+In the above example, even though the string is hard-coded and will be valid, the `.parse()` function will return a `Result` object and therefore the compiler will require us to handle an `Err` case.  Using `expect` here makes our code more explicit that this will not happen.  Providing the assumption in the message helps others understand what we're doing.
+
+When your code could end up in a bad state (e.g. when some assumption is violated such as invalid or contradictory values), it is advisable to let your code panic.  Bad states are something that is truly unexpected without a good way to encode the state for better handling. In these cases, where your code relies on being in a good state, you should panic. If someone passes a value that doesn't make sense, it's a good idea to return an `Err` informing the user of what is wrong.  But if your code could wind up doing something harmful (e.g. `rm -rf /`), it's best to panic to prevent this.
+
+In situations where failures are expected, it's more apporpriate to return a `Result` but when your code is called with invalid inputs this violates your function's contract and you should panic to make it clear to the person using your code their function call is invalid.
+
+One way you can limit the invalid values to your program is to let Rust's type system do the work for you.  By specifying types (and perhaps custom types) for your code, you can ensure your code only receives valid values.
+
+## [Generic Types, Traits, and Lifetimes][def25] - project `generics/`
+
+Generics act as abstract stand-ins for concrete types and properties. Some examples of Generics we have already worked with are `Option<T>` and `Result<T, E>`.  They also allow you to reduce duplication of effort across your code base.  We will look at extracting functions, using trainst, and defining lifetimes as ways to make your code more concise and convey information to the compiler.
+
+Generics allow us to replace specific types with a placeholder that represents multiple types.  However, first lets look at function extraction to replace a specific value with a placeholder as a way to get familiar with this concept.  This is basically what I already do with my own coding approaches, abstracting repeated logic into a separate function. See `generics` project code.
+
+### [Generic Data Types][def26]
+
 
 
 ---
@@ -723,3 +749,5 @@ When you call `panic!` there is no way for your code to recover from the error. 
 [def22]: https://doc.rust-lang.org/book/ch09-00-error-handling.html
 [def23]: https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html#propagating-errors
 [def24]: https://doc.rust-lang.org/book/ch09-03-to-panic-or-not-to-panic.html
+[def25]: https://doc.rust-lang.org/book/ch10-00-generics.html
+[def26]: https://doc.rust-lang.org/book/ch10-01-syntax.html
