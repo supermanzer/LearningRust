@@ -695,6 +695,8 @@ this would nto work because the return value for the `main()` function doesn't m
 
 ### [To Panic or Not][def24]
 
+When you call `panic!` there is no way for your code to recover from the error.  When you choose to either call `panic!` or return `Result`, you are making a decision for your code about whether the error is something that should stop code execution or not.
+
 
 ---
 [def1]: https://doc.rust-lang.org/book
